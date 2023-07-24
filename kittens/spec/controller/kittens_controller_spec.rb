@@ -53,21 +53,31 @@ RSpec.describe KittensController, type: :controller do
 
     describe "POST then GET data" do
         it "#create then retrieve index" do
+            #one `post :create` per kitten
             post :create, params: {
-                kitten1: {
+                kitten: {
                     name:"butterball",
                     age:"4",
                     cuteness:"7.5/10",
                     softness:"9.5/10"
-                },
-                kitten2: {
+                }
+            }
+            post :create, params: {
+                kitten: {
                     name:"legolas",
                     age:"3000",
                     cuteness:"8.5/10",
                     softness:"6.5/10"
                 }
             }
+            #get :show, params: {id: 2}
+            get :index
+            p response.body
+            expect(response.body).to include("legolas")
             
+            get :show, params: {id: 1}
+            p response.body
+            expect(response.body).to include("7.5/10")
         end
     end
 end

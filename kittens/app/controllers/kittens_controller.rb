@@ -1,6 +1,7 @@
 class KittensController < ApplicationController
   def index
     @kittens = Kitten.all
+    render json: @kittens
   end
 
 =begin
@@ -19,6 +20,7 @@ class KittensController < ApplicationController
 
   def show
     @kitten = Kitten.find(params[:id])
+    render json: @kitten
   end
 
   def new
