@@ -18,6 +18,10 @@ RSpec.describe KittensController, type: :controller do
 
             get :index
 
+            # just a reminder for myself:
+            # fyi the :kittens is just the instance variable used in the controller action,
+            # so :kittens because you used #index and it uses the @kittens instance var
+            # and consequently, :kitten would be it instead if you used #show (as it uses @kitten not @kittens)
             expect(assigns(:kittens)).to eq([kitten1, kitten2])
         end
     end
@@ -52,32 +56,90 @@ RSpec.describe KittensController, type: :controller do
     end
 
     describe "POST then GET data" do
-        it "#create then retrieve index" do
-            #one `post :create` per kitten
-            post :create, params: {
-                kitten: {
-                    name:"butterball",
-                    age:"4",
-                    cuteness:"7.5/10",
-                    softness:"9.5/10"
+        context "valid params" do
+            it "#create then retrieve index" do
+                #one `post :create` per kitten
+                post :create, params: {
+                    kitten: {
+                        name:"butterball",
+                        age:"4",
+                        cuteness:"7.5/10",
+                        softness:"9.5/10"
+                    }
                 }
-            }
-            post :create, params: {
-                kitten: {
-                    name:"legolas",
-                    age:"3000",
-                    cuteness:"8.5/10",
-                    softness:"6.5/10"
+                post :create, params: {
+                    kitten: {
+                        name:"legolas",
+                        age:"3000",
+                        cuteness:"8.5/10",
+                        softness:"6.5/10"
+                    }
                 }
-            }
-            #get :show, params: {id: 2}
-            get :index
-            p response.body
-            expect(response.body).to include("legolas")
-            
-            get :show, params: {id: 1}
-            p response.body
-            expect(response.body).to include("7.5/10")
+                #get :show, params: {id: 2}
+                get :index
+                p response.body
+                expect(response.body).to include("legolas")
+                
+                get :show, params: {id: 1}
+                p response.body
+                expect(response.body).to include("7.5/10")
+            end
+        end
+
+        context "invalid params" do
+            it "making kitten with bad cutness param" do
+                p "about to #create"
+                post :create, params:{
+                    kitten:{
+                        name: "noodles",
+                        age: "4",
+                        cuteness: "nine out of 10",
+                        softness: "10/10"
+                    }
+                }
+                p response.status
+                expect(response).to_not have_http_status(:success) # successes are in the 200 range
+                #expect(response).to have_http_status(:success) # this does in fact cause the test to fail, AS I DESIRED. good check
+                expect(response).to have_http_status(:unprocessable_entity)
+            end
+        end
+    end
+    describe "edit+update tests" do
+        it "modify existing kitten data" do
+            #premade item
+            kitten = Kitten.create(name: "hotodg", age: "2", cuteness: "8/10", softness: "7.5/10")
+
+            #access item
+            #ps the spots where that's a 1 should normally be something like: `kitten.id`
+            #get :edit, params: {id: 1}
+            retrived_data = response.body
+            new_name = "hotcat"
+            #change item
+            patch :update, params: {id: 1, kitten: {name: new_name}}
+
+            #puts kitten.name
+            expect(response).to redirect_to(kitten_path(kitten))
+
+            #puts response
+            hotcat = Kitten.find(1)
+            #puts hotcat.name
+            expect(hotcat.name).to eq(new_name)
+        end
+
+        describe "delete entry" do
+            it "deleting a kitten in db" do
+                victim = Kitten.create(name: "gible", age: "1", cuteness: "5/10", softness: "6.5/10")
+
+                get :index
+                puts response.body
+
+                expect(Kitten.where(name: "gible")).to exist
+
+                delete :destroy, params: {id: 1}
+                puts response.body
+
+                expect(Kitten.where(name: "gible")).to_not exist
+            end
         end
     end
 end

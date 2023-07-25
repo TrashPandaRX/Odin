@@ -34,18 +34,35 @@ class KittensController < ApplicationController
       redirect_to @kitten, :status => 201
     else
       #@kittens = Kitten.all #redundant since you are already redirecting to index which does this again.
-      redirect_to action: 'index'
+      
+      #strongly expect this is why my route's prefix for #create is `kittens` instead of `kitten`
+      redirect_to action: 'index', :status => :unprocessable_entity
     end
   end
 
   def edit
-
+    @kitten = Kitten.find(params[:id])
+    #render json: @kitten
   end
 
   def update
+    @kitten = Kitten.find(params[:id])
+
+    if @kitten.update(kitten_params)
+      redirect_to @kitten
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
 
   def destroy
+    @kitten = Kitten.find(params[:id])
+
+    if @kitten.destroy
+      redirect_to kittens_path, status: :see_other
+    #else
+      #redirect_to root_path, status: :see_other
+    end
   end
 
   private
