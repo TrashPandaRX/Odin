@@ -145,16 +145,21 @@ RSpec.describe KittensController, type: :controller do
         end
 
         #broken test
+        # @5:04pm cst, still broken but im on the right track
         xit "trying to delete an item that doesnt exist" do
             victim = Kitten.create(name: "gible", age: "1", cuteness: "5/10", softness: "6.5/10")
 
-            get :index
+            delete :destroy, params: {id: 10}
 
-            delete :destroy, params: {id: 1}
+            # make sure that gible didnt get deleted by accident after the failed attempt
+            expect(Kitten.where(name: "gible")).to exist
 
-            expect(Kitten.where(name: "gible")).to_not exist
+            # cant have complex expect statements, have to be single arguments, typically just your `request`
+            #expect{ delete :destroy, params: {id: 1}}.to have_http_status(:not_found)
 
-            expect{ delete :destroy, params: {id: 1}}.to have_http_status(:not_found)
+            # so instead try and let the test fail on a non-existent entry and just return the status of that response
+            expect(response).to have_http_status(:not_found)
+            expect(response).to redirect_to(kittens_path)
         end
     end
 end
