@@ -112,7 +112,9 @@ RSpec.describe KittensController, type: :controller do
             #access item
             #ps the spots where that's a 1 should normally be something like: `kitten.id`
             #get :edit, params: {id: 1}
-            retrived_data = response.body
+            puts "inside edit+update tests"
+            #retrived_data = response.body
+            #puts retrived_data
             new_name = "hotcat"
             #change item
             patch :update, params: {id: 1, kitten: {name: new_name}}
@@ -125,21 +127,34 @@ RSpec.describe KittensController, type: :controller do
             #puts hotcat.name
             expect(hotcat.name).to eq(new_name)
         end
+    end
 
-        describe "delete entry" do
-            it "deleting a kitten in db" do
-                victim = Kitten.create(name: "gible", age: "1", cuteness: "5/10", softness: "6.5/10")
+    describe "delete entry" do
+        it "deleting a kitten in db" do
+            victim = Kitten.create(name: "gible", age: "1", cuteness: "5/10", softness: "6.5/10")
 
-                get :index
-                puts response.body
+            get :index
+            puts response.body
 
-                expect(Kitten.where(name: "gible")).to exist
+            expect(Kitten.where(name: "gible")).to exist
 
-                delete :destroy, params: {id: 1}
-                puts response.body
+            delete :destroy, params: {id: 1}
+            puts response.body
 
-                expect(Kitten.where(name: "gible")).to_not exist
-            end
+            expect(Kitten.where(name: "gible")).to_not exist
+        end
+
+        #broken test
+        xit "trying to delete an item that doesnt exist" do
+            victim = Kitten.create(name: "gible", age: "1", cuteness: "5/10", softness: "6.5/10")
+
+            get :index
+
+            delete :destroy, params: {id: 1}
+
+            expect(Kitten.where(name: "gible")).to_not exist
+
+            expect{ delete :destroy, params: {id: 1}}.to have_http_status(:not_found)
         end
     end
 end
