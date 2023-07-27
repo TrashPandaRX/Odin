@@ -56,15 +56,19 @@ class KittensController < ApplicationController
     end
   end
 
+  # just act like you deleted the item anyway so the user doesnt keep flooding with DELETE destroy requests
+  # if this is the cause of the failed test just remove this whole elsif portion
   def destroy
-    @kitten = Kitten.find(params[:id])
+    begin
+      @kitten = Kitten.find(params[:id])
 
-    if @kitten.destroy
-      redirect_to kittens_path, status: :see_other
+      if @kitten.destroy
+        redirect_to kittens_path, status: :see_other
+      end
+    
+    # honestly could have made an elsif to `raise` for the `RecordNotFound` situation here
 
-    # just act like you deleted the item anyway so the user doesnt keep flooding with DELETE destroy requests
-    # if this is the cause of the failed test just remove this whole elsif portion
-    elsif ActiveRecord::RecordNotFound
+    rescue ActiveRecord::RecordNotFound
       redirect_to kittens_path, status: :not_found
     end
   end

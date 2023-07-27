@@ -146,7 +146,7 @@ RSpec.describe KittensController, type: :controller do
 
         #broken test
         # @5:04pm cst, still broken but im on the right track
-        xit "trying to delete an item that doesnt exist" do
+        it "trying to delete an item that doesnt exist" do
             victim = Kitten.create(name: "gible", age: "1", cuteness: "5/10", softness: "6.5/10")
 
             delete :destroy, params: {id: 10}
@@ -159,7 +159,10 @@ RSpec.describe KittensController, type: :controller do
 
             # so instead try and let the test fail on a non-existent entry and just return the status of that response
             expect(response).to have_http_status(:not_found)
-            expect(response).to redirect_to(kittens_path)
+            
+            # apparently you cant use anything aside from 3xx status codes with redirect_to
+            # if i really want to issue the 404, i'd have to redirect to a new page that displays a 404.
+            #expect(response).to redirect_to(:index)
         end
     end
 end
